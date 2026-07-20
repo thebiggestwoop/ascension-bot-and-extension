@@ -182,14 +182,13 @@ async def help_command(ctx):
         "**!cd [num_dice]** - Rolls Challenge Dice. Specify the number of dice.\n"
         "**!m [amount]** - Adjusts the Momentum pool. Use `!m` to check current Momentum, `!m set [amount]` to set a value, or `!m [amount]` to add/subtract.\n"
         "**!t [amount]** - Adjusts the Threat pool. Use `!t` to check current Threat, `!t set [amount]` to set a value, or `!t [amount]` to add/subtract.\n"
-        "**!link** - (Server managers only) Generates a code to link this channel to the Owlbear extension.\n"
+        "**!link** - Generates a code to link this channel to the Owlbear extension.\n"
     )
     await ctx.send(help_text)
 
 
 @bot.command(name="link")
 @commands.guild_only()
-@commands.has_permissions(manage_guild=True)
 async def link(ctx):
     code = generate_pairing_code()
     pairing_codes[code] = {"guild_id": ctx.guild.id, "channel_id": ctx.channel.id}
