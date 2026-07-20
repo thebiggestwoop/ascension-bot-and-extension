@@ -30,6 +30,7 @@ const els = {
   cdRollBtn: document.getElementById("cd-roll-btn"),
 
   momentumValue: document.getElementById("momentum-value"),
+  momentumIcons: document.getElementById("momentum-icons"),
   momentumStageMinus: document.getElementById("momentum-stage-minus"),
   momentumPending: document.getElementById("momentum-pending"),
   momentumStagePlus: document.getElementById("momentum-stage-plus"),
@@ -38,6 +39,7 @@ const els = {
   momentumSetBtn: document.getElementById("momentum-set-btn"),
 
   threatValue: document.getElementById("threat-value"),
+  threatIcons: document.getElementById("threat-icons"),
   threatGmNotice: document.getElementById("threat-gm-notice"),
   threatControls: document.getElementById("threat-controls"),
   threatStageMinus: document.getElementById("threat-stage-minus"),
@@ -84,6 +86,28 @@ function formatSigned(value) {
 function renderPending() {
   els.momentumPending.textContent = formatSigned(momentumPending);
   els.threatPending.textContent = formatSigned(threatPending);
+}
+
+function renderPoolIcons(container, iconSrc, count) {
+  const icons = [];
+  for (let i = 0; i < count; i++) {
+    const img = document.createElement("img");
+    img.src = iconSrc;
+    img.alt = "";
+    img.className = "pool-icon";
+    icons.push(img);
+  }
+  container.replaceChildren(...icons);
+}
+
+function setMomentumValue(value) {
+  els.momentumValue.textContent = value;
+  renderPoolIcons(els.momentumIcons, "icons/momentum.png", value);
+}
+
+function setThreatValue(value) {
+  els.threatValue.textContent = value;
+  renderPoolIcons(els.threatIcons, "icons/threat.png", value);
 }
 
 // Builds "[3, 14, 20]" as DOM nodes (not an HTML string) so nothing in
@@ -213,8 +237,8 @@ async function pollUpdates() {
   }
   try {
     const data = await requestJson(`/api/${pairingCode}/updates?since=${lastSeq}`);
-    els.momentumValue.textContent = data.momentum;
-    els.threatValue.textContent = data.threat;
+    setMomentumValue(data.momentum);
+    setThreatValue(data.threat);
     for (const event of data.events) {
       if (event.type === "d20_roll" || event.type === "challenge_roll") {
         addHistoryEntry(event);
@@ -342,7 +366,7 @@ els.momentumApplyBtn.addEventListener(
       amount: momentumPending,
       player_name: playerName,
     });
-    els.momentumValue.textContent = result.momentum;
+    setMomentumValue(result.momentum);
     momentumPending = 0;
     renderPending();
   })
@@ -355,7 +379,7 @@ els.momentumSetBtn.addEventListener(
       amount: Number(els.momentumSetInput.value),
       player_name: playerName,
     });
-    els.momentumValue.textContent = result.momentum;
+    setMomentumValue(result.momentum);
   })
 );
 
@@ -379,7 +403,7 @@ els.threatApplyBtn.addEventListener(
       player_name: playerName,
       caller_role: isGM ? "GM" : "PLAYER",
     });
-    els.threatValue.textContent = result.threat;
+    setThreatValue(result.threat);
     threatPending = 0;
     renderPending();
   })
@@ -393,7 +417,7 @@ els.threatSetBtn.addEventListener(
       player_name: playerName,
       caller_role: isGM ? "GM" : "PLAYER",
     });
-    els.threatValue.textContent = result.threat;
+    setThreatValue(result.threat);
   })
 );
 

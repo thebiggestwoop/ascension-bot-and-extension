@@ -4,7 +4,8 @@
   --fg: #1e1f22;
   --card-bg: #f2f3f5;
   --border: #d4d6da;
-  --accent: #5865f2;
+  --accent: #1e18ab;
+  --accent-text: #e2ca5b;
   --error: #d83c3e;
 }
 
@@ -115,7 +116,7 @@ button {
   border-radius: 4px;
   padding: 6px 10px;
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   cursor: pointer;
   font-weight: 600;
 }
@@ -133,7 +134,7 @@ button:disabled {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 120px;
+  max-height: 240px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -172,4 +173,16 @@ button:disabled {
 .pending {
   font-size: 11px;
   opacity: 0.8;
+}
+
+.pool-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 4px 0;
+}
+
+.pool-icon {
+  width: 24px;
+  height: 24px;
 }

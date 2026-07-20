@@ -11,11 +11,6 @@
     <p id="global-status" class="status"></p>
   </header>
 
-  <section class="card">
-    <h2>Roll History</h2>
-    <ul id="roll-history" class="roll-history"></ul>
-  </section>
-
   <details id="settings-details">
     <summary>Settings</summary>
     <p id="settings-gm-notice" class="status">GM only.</p>
@@ -28,6 +23,11 @@
     </div>
     <p id="settings-status" class="status"></p>
   </details>
+
+  <section class="card">
+    <h2>Roll History</h2>
+    <ul id="roll-history" class="roll-history"></ul>
+  </section>
 
   <section class="card">
     <h2>d20</h2>
@@ -49,6 +49,7 @@
 
   <section class="card">
     <h2>Momentum: <span id="momentum-value">0</span></h2>
+    <div id="momentum-icons" class="pool-icons"></div>
     <div class="row">
       <button id="momentum-stage-minus">-1</button>
       <span class="pending">Pending: <span id="momentum-pending">+0</span></span>
@@ -63,6 +64,7 @@
 
   <section class="card" id="threat-card">
     <h2>Threat: <span id="threat-value">0</span></h2>
+    <div id="threat-icons" class="pool-icons"></div>
     <p id="threat-gm-notice" class="status">GM only.</p>
     <div id="threat-controls" hidden>
       <div class="row">
