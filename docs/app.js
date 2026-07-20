@@ -108,7 +108,8 @@ function buildRollsFragment(rolls, critRange) {
 }
 
 function pluralize(count, word) {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
+  const suffix = /[sxz]$|[cs]h$/i.test(word) ? "es" : "s";
+  return `${count} ${word}${count === 1 ? "" : suffix}`;
 }
 
 // Same face art the Discord bot posts as custom emoji, reused here as icons.
@@ -119,18 +120,22 @@ const CD_FACE_ICONS = {
   effect: "icons/CD_effect.png",
 };
 
-function buildFacesIconRow(faces) {
+const D20_ICONS = Object.fromEntries(
+  Array.from({ length: 20 }, (_, i) => [i + 1, `icons/d20_${i + 1}.png`])
+);
+
+function buildIconRow(values, iconMap) {
   const row = document.createElement("div");
-  row.className = "cd-faces";
-  faces.forEach((face) => {
-    const src = CD_FACE_ICONS[face];
+  row.className = "dice-faces";
+  values.forEach((value) => {
+    const src = iconMap[value];
     if (!src) {
       return;
     }
     const img = document.createElement("img");
     img.src = src;
-    img.alt = face;
-    img.className = "cd-face-icon";
+    img.alt = String(value);
+    img.className = "dice-face-icon";
     row.appendChild(img);
   });
   return row;
@@ -142,6 +147,10 @@ function describeRoll(event) {
   const sourceTag = event.source === "discord" ? "Discord" : "Owlbear";
 
   if (event.type === "d20_roll") {
+    const container = document.createElement("div");
+    if (Array.isArray(event.rolls)) {
+      container.appendChild(buildIconRow(event.rolls, D20_ICONS));
+    }
     const line = document.createElement("span");
     line.appendChild(buildRollsFragment(event.rolls, event.crit_range));
     let suffix = ` -> ${pluralize(event.total_successes, "success")}`;
@@ -149,17 +158,18 @@ function describeRoll(event) {
       suffix += `, ${pluralize(event.complications, "complication")}`;
     }
     line.appendChild(document.createTextNode(suffix));
-    return { actor: event.actor, sourceTag, node: line };
+    container.appendChild(line);
+    return { actor: event.actor, sourceTag, node: container };
   }
 
   if (event.type === "challenge_roll") {
     const container = document.createElement("div");
     if (Array.isArray(event.faces)) {
-      container.appendChild(buildFacesIconRow(event.faces));
+      container.appendChild(buildIconRow(event.faces, CD_FACE_ICONS));
     }
     const line = document.createElement("span");
     line.textContent =
-      `CD -> ${pluralize(event.total_successes, "success")}, ` +
+      `CD -> ${event.total_successes} total, ` +
       `${pluralize(event.effects, "effect")}, ${pluralize(event.blanks, "blank")}`;
     container.appendChild(line);
     return { actor: event.actor, sourceTag, node: container };

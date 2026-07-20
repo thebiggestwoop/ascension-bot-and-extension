@@ -157,13 +157,14 @@ button:disabled {
   padding-bottom: 0;
 }
 
-.cd-faces {
+.dice-faces {
   display: flex;
+  flex-wrap: wrap;
   gap: 3px;
   margin: 2px 0;
 }
 
-.cd-face-icon {
+.dice-face-icon {
   width: 18px;
   height: 18px;
 }
