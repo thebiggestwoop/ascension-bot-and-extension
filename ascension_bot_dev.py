@@ -184,7 +184,9 @@ async def help_command(ctx):
         "**!cd [num_dice]** - Rolls Challenge Dice. Specify the number of dice.\n"
         "**!m [amount]** - Adjusts the Momentum pool. Use `!m` to check current Momentum, `!m set [amount]` to set a value, or `!m [amount]` to add/subtract.\n"
         "**!t [amount]** - Adjusts the Threat pool. Use `!t` to check current Threat, `!t set [amount]` to set a value, or `!t [amount]` to add/subtract.\n"
-        "**!link** - Generates a code to link this channel to the Owlbear extension.\n"
+        "**!link** - Generates a code to link this channel to the Owlbear extension.\n\n"
+        "**Owlbear Extension:** https://owlbear.heruv.uk/manifest.json\n"
+        "Add it in Owlbear (Extensions -> Add custom extension), then run `!link` here and paste the code into the extension's Settings to roll dice and adjust Momentum/Threat right from Owlbear.\n"
     )
     await ctx.send(help_text)
 
