@@ -52,7 +52,7 @@ async def d20(ctx, target_number: int, crit_range: int, num_dice: int = 2):
         await ctx.send(f"{ctx.author.mention}\n**Error:** {e}")
         return
 
-    emoji_chunks, result_text = gl.format_d20_discord(rolls, crit_range, total_successes, complications)
+    emoji_chunks, result_text = gl.format_d20_discord(rolls, target_number, crit_range, total_successes, complications)
 
     # Sent emoji-only (no text) so Discord renders the dice faces at large size
     for chunk in emoji_chunks:

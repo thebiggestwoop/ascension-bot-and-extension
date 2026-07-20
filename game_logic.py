@@ -78,7 +78,7 @@ d20_emojis = {
 }
 
 
-def format_d20_discord(rolls, crit_range, total_successes, complications):
+def format_d20_discord(rolls, target_number, crit_range, total_successes, complications):
     """Turns a raw d20 roll result into the (emoji_chunks, result_text) pair
     a Discord message pair is built from."""
     emoji_string = ''.join(d20_emojis[roll] for roll in rolls)
@@ -87,7 +87,14 @@ def format_d20_discord(rolls, crit_range, total_successes, complications):
     chunk_size = 2000  # Discord's message character limit is 2000
     emoji_chunks = [emoji_string[i:i + chunk_size] for i in range(0, len(emoji_string), chunk_size)]
 
-    formatted_rolls = ", ".join(f"**{roll}**" if roll <= crit_range else str(roll) for roll in rolls)
+    def format_roll(roll):
+        if roll <= crit_range:
+            return f"**__{roll}__**"  # crit success: bold + underlined
+        if roll <= target_number:
+            return f"**{roll}**"  # regular success: bold
+        return str(roll)
+
+    formatted_rolls = ", ".join(format_roll(roll) for roll in rolls)
     result_text = f"**Rolls:** [{formatted_rolls}]\n**Total Successes:** {total_successes}"
     if complications > 0:
         result_text += f"\n**Complications:** {complications}"

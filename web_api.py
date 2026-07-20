@@ -99,7 +99,7 @@ def create_app(bot, pairing_codes):
         except gl.AscensionError as e:
             return web.json_response({"error": str(e)}, status=400)
 
-        emoji_chunks, result_text = gl.format_d20_discord(rolls, crit_range, total_successes, complications)
+        emoji_chunks, result_text = gl.format_d20_discord(rolls, target_number, crit_range, total_successes, complications)
 
         actor = data.get("player_name") or "Someone"
         channel = await _get_channel(bot, pairing["channel_id"])
