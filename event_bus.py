@@ -13,6 +13,8 @@ Each event gets an incrementing per-guild sequence number so a poller can
 ask "what's new since seq N" instead of re-fetching everything each time.
 """
 
+import time
+
 MAX_HISTORY = 40
 
 _history = {}  # guild_id -> list of (seq, event), oldest first
@@ -20,9 +22,14 @@ _next_seq = {}  # guild_id -> next sequence number to assign
 
 
 def publish(guild_id, event):
+    """Stamps the event with a Unix epoch timestamp (seconds) here, once,
+    rather than at every call site. The extension renders this in the
+    viewer's own local timezone client-side -- same approach Discord itself
+    uses for message timestamps -- rather than the server picking one."""
     seq = _next_seq.get(guild_id, 1)
     _next_seq[guild_id] = seq + 1
 
+    event = {**event, "timestamp": int(time.time())}
     entries = _history.setdefault(guild_id, [])
     entries.append((seq, event))
     if len(entries) > MAX_HISTORY:

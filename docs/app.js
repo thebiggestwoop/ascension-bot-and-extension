@@ -50,6 +50,40 @@ const els = {
   threatSetBtn: document.getElementById("threat-set-btn"),
 };
 
+// Native number-input spinners look like unstyled browser chrome next to
+// the rest of the themed UI (they're hidden entirely via CSS), so every
+// number field gets this small custom up/down stepper instead. Applied
+// generically to all of them rather than duplicating markup per field --
+// moving an <input> into a new wrapper doesn't invalidate any existing
+// references to it (e.g. the ones in `els` above), so ordering doesn't matter.
+function attachStepper(input) {
+  const wrapper = document.createElement("span");
+  wrapper.className = "number-input";
+  input.parentNode.insertBefore(wrapper, input);
+  wrapper.appendChild(input);
+
+  const stepper = document.createElement("span");
+  stepper.className = "number-stepper";
+
+  const makeStepButton = (label, delta) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "stepper-btn";
+    btn.textContent = label;
+    btn.setAttribute("aria-label", delta > 0 ? "Increase" : "Decrease");
+    btn.addEventListener("click", () => {
+      input.value = (Number(input.value) || 0) + delta;
+    });
+    return btn;
+  };
+
+  stepper.appendChild(makeStepButton("▲", 1));
+  stepper.appendChild(makeStepButton("▼", -1));
+  wrapper.appendChild(stepper);
+}
+
+document.querySelectorAll('input[type="number"]').forEach(attachStepper);
+
 let pairingCode = "";
 let playerName = "Someone";
 let isGM = false;
@@ -208,6 +242,16 @@ function describeRoll(event) {
   return null;
 }
 
+// event.timestamp is Unix epoch seconds (set server-side by event_bus.py).
+// Rendering it here, client-side, means each viewer sees it in their own
+// local timezone -- the same approach Discord itself uses for messages.
+function formatRollTime(epochSeconds) {
+  return new Date(epochSeconds * 1000).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function addHistoryEntry(event) {
   const described = describeRoll(event);
   if (!described) {
@@ -221,6 +265,12 @@ function addHistoryEntry(event) {
   actorEl.textContent = described.actor;
   line1.appendChild(actorEl);
   line1.appendChild(document.createTextNode(` (${described.sourceTag})`));
+  if (typeof event.timestamp === "number") {
+    const timeEl = document.createElement("span");
+    timeEl.className = "roll-time";
+    timeEl.textContent = ` ${formatRollTime(event.timestamp)}`;
+    line1.appendChild(timeEl);
+  }
 
   li.appendChild(line1);
   li.appendChild(described.node);

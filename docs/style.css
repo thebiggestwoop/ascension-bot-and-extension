@@ -111,6 +111,61 @@ input {
   width: 64px;
 }
 
+/* Native spinner arrows look like unstyled browser chrome next to the rest
+   of the themed UI -- hidden in favor of the custom .number-stepper below
+   (typing a value directly still works too). */
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input {
+  position: relative;
+  display: inline-block;
+}
+
+.number-input input[type="number"] {
+  padding-right: 16px;
+}
+
+.number-stepper {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  width: 15px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+}
+
+.stepper-btn {
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: var(--fg);
+  font-weight: 400;
+  font-size: 7px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepper-btn:hover {
+  color: var(--accent);
+}
+
 /* Secondary (default): quiet outline style for supporting actions like
    Apply/Set/-1/+1, so they don't compete visually with the roll buttons.
    Uses the same neutral fg/border colors as the rest of the UI chrome
@@ -192,9 +247,38 @@ button:disabled {
   height: 36px;
 }
 
-.pending {
+.roll-time {
+  opacity: 0.6;
   font-size: 11px;
-  opacity: 0.8;
+  font-weight: 400;
+}
+
+.pending {
+  font-size: 12px;
+  margin: 4px 0 6px 0;
+}
+
+.pending-value {
+  font-weight: 700;
+}
+
+/* Quieter than the default <details> (used for Settings) since this is a
+   less-used escape hatch next to the main -1/+1/Apply controls. */
+.set-value {
+  border: none;
+  padding: 0;
+  margin-top: 6px;
+}
+
+.set-value summary {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+.set-value .row {
+  margin-top: 6px;
+  margin-bottom: 0;
 }
 
 .pool-icons {

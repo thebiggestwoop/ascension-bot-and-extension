@@ -50,16 +50,19 @@
   <section class="card">
     <h2>Momentum: <span id="momentum-value">0</span></h2>
     <div id="momentum-icons" class="pool-icons"></div>
+    <p class="pending">Pending: <span id="momentum-pending" class="pending-value">+0</span></p>
     <div class="row">
       <button id="momentum-stage-minus">-1</button>
-      <span class="pending">Pending: <span id="momentum-pending">+0</span></span>
       <button id="momentum-stage-plus">+1</button>
       <button id="momentum-apply-btn">Apply</button>
     </div>
-    <div class="row">
-      <label>Set to <input id="momentum-set-input" type="number" /></label>
-      <button id="momentum-set-btn">Set</button>
-    </div>
+    <details class="set-value">
+      <summary>Set exact value</summary>
+      <div class="row">
+        <label>Set to <input id="momentum-set-input" type="number" /></label>
+        <button id="momentum-set-btn">Set</button>
+      </div>
+    </details>
   </section>
 
   <section class="card" id="threat-card">
@@ -67,16 +70,19 @@
     <div id="threat-icons" class="pool-icons"></div>
     <p id="threat-gm-notice" class="status">GM only.</p>
     <div id="threat-controls" hidden>
+      <p class="pending">Pending: <span id="threat-pending" class="pending-value">+0</span></p>
       <div class="row">
         <button id="threat-stage-minus">-1</button>
-        <span class="pending">Pending: <span id="threat-pending">+0</span></span>
         <button id="threat-stage-plus">+1</button>
         <button id="threat-apply-btn">Apply</button>
       </div>
-      <div class="row">
-        <label>Set to <input id="threat-set-input" type="number" /></label>
-        <button id="threat-set-btn">Set</button>
-      </div>
+      <details class="set-value">
+        <summary>Set exact value</summary>
+        <div class="row">
+          <label>Set to <input id="threat-set-input" type="number" /></label>
+          <button id="threat-set-btn">Set</button>
+        </div>
+      </details>
     </div>
   </section>
 
