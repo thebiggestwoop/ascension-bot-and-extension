@@ -2,7 +2,9 @@
 
 A Discord bot for the "Ascension" tabletop system, paired with an Owlbear Rodeo extension that acts as a remote control for it — roll dice or nudge Momentum/Threat from inside Owlbear, and the result posts to Discord automatically.
 
-**Just want to use it?** Invite the live bot to your Discord server: **[Add to Discord](https://discord.com/oauth2/authorize?client_id=1303062746362810389)** — then run `!h` in any channel for the command list, or `!link` to pair the Owlbear extension.
+**Just want to use it?** Invite the live bot to your Discord server: **[Add to Discord](https://discord.com/oauth2/authorize?client_id=1303062746362810389&scope=bot&permissions=330752)** — then run `!h` in any channel for the command list, or `!link` to pair the Owlbear extension.
+
+The link requests View Channels, Send Messages, Read Message History, and Use External Emojis — without these, the bot can join a server but stay silent in channels where `@everyone` doesn't already have those permissions. If the bot's already in your server from an older link, re-clicking this one will prompt Discord to update its permissions rather than add a duplicate.
 
 ## Contents
 

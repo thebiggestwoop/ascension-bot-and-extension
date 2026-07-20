@@ -275,10 +275,11 @@ function addHistoryEntry(event) {
   li.appendChild(line1);
   li.appendChild(described.node);
 
-  els.rollHistory.prepend(li);
+  els.rollHistory.appendChild(li);
   while (els.rollHistory.children.length > MAX_HISTORY_ENTRIES) {
-    els.rollHistory.removeChild(els.rollHistory.lastChild);
+    els.rollHistory.removeChild(els.rollHistory.firstChild);
   }
+  els.rollHistory.scrollTop = els.rollHistory.scrollHeight;
 }
 
 async function pollUpdates() {
