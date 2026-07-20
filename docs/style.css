@@ -112,7 +112,7 @@ input {
 }
 
 button {
-  border: 1px solid var(--accent-text);
+  border: none;
   border-radius: 4px;
   padding: 6px 10px;
   background: var(--accent);
