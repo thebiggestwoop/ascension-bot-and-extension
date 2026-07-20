@@ -1,6 +1,6 @@
 # Ascension Bot & Owlbear Extension
 
-A Discord bot for the "Ascension" tabletop system (a d20 roll-under game with a Momentum/Threat economy and a Genesys-style "Challenge Dice" mechanic), paired with an Owlbear Rodeo extension that acts as a remote control for it — roll dice or nudge Momentum/Threat from inside Owlbear, and the result posts to Discord automatically.
+A Discord bot for the "Ascension" tabletop system, paired with an Owlbear Rodeo extension that acts as a remote control for it — roll dice or nudge Momentum/Threat from inside Owlbear, and the result posts to Discord automatically.
 
 **Just want to use it?** Invite the live bot to your Discord server: **[Add to Discord](https://discord.com/oauth2/authorize?client_id=1303062746362810389)** — then run `!h` in any channel for the command list, or `!link` to pair the Owlbear extension.
 
