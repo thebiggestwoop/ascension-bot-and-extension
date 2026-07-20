@@ -15,8 +15,11 @@ import random
 MOMENTUM_MAX = 6
 THREAT_SAFETY_CAP = 50
 
-# Safety cap on dice count so a bad/huge input can't spam dozens of messages.
-MAX_DICE = 20
+# Safety caps on dice count so a bad/huge input can't spam dozens of messages.
+# Challenge Dice gets a higher cap than d20 since its emoji tags are shorter,
+# so even 50 of them stays comfortably under Discord's message length limit.
+MAX_D20_DICE = 20
+MAX_CD_DICE = 50
 
 # Global dictionaries to keep track of momentum and threat for each server
 momentum_pool = {}
@@ -48,8 +51,8 @@ def roll_d20(target_number, crit_range, num_dice):
 
 def perform_d20_roll(target_number, crit_range, num_dice):
     """Validates and rolls d20s. Raises AscensionError on bad input."""
-    if not 1 <= num_dice <= MAX_DICE:
-        raise AscensionError(f"Number of dice must be between 1 and {MAX_DICE}.")
+    if not 1 <= num_dice <= MAX_D20_DICE:
+        raise AscensionError(f"Number of dice must be between 1 and {MAX_D20_DICE}.")
     return roll_d20(target_number, crit_range, num_dice)
 
 
@@ -137,8 +140,8 @@ def roll_challenge_faces(num_dice):
 
 def perform_challenge_roll(num_dice):
     """Validates and rolls Challenge Dice. Raises AscensionError on bad input."""
-    if not 1 <= num_dice <= MAX_DICE:
-        raise AscensionError(f"Number of dice must be between 1 and {MAX_DICE}.")
+    if not 1 <= num_dice <= MAX_CD_DICE:
+        raise AscensionError(f"Number of dice must be between 1 and {MAX_CD_DICE}.")
     return roll_challenge_faces(num_dice)
 
 

@@ -18,11 +18,14 @@
 
   <details id="settings-details">
     <summary>Settings</summary>
-    <div class="field">
-      <label for="pairing-code">Pairing code</label>
-      <input id="pairing-code" type="text" placeholder="from !link in Discord" />
+    <p id="settings-gm-notice" class="status">GM only.</p>
+    <div id="settings-controls" hidden>
+      <div class="field">
+        <label for="pairing-code">Pairing code</label>
+        <input id="pairing-code" type="text" placeholder="from !link in Discord" />
+      </div>
+      <button id="save-settings">Save</button>
     </div>
-    <button id="save-settings">Save</button>
     <p id="settings-status" class="status"></p>
   </details>
 

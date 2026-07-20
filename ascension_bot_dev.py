@@ -92,6 +92,7 @@ async def challenge(ctx, num_dice: int):
         "type": "challenge_roll",
         "source": "discord",
         "actor": ctx.author.display_name,
+        "faces": faces,
         "total_successes": total_successes,
         "effects": effects,
         "blanks": blanks,

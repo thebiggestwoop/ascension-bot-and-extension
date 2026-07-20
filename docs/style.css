@@ -157,6 +157,17 @@ button:disabled {
   padding-bottom: 0;
 }
 
+.cd-faces {
+  display: flex;
+  gap: 3px;
+  margin: 2px 0;
+}
+
+.cd-face-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .pending {
   font-size: 11px;
   opacity: 0.8;

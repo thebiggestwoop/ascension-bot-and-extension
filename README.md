@@ -37,7 +37,7 @@ Two front ends — Discord chat commands and the Owlbear extension — both call
 | Command | Who | What it does |
 |---|---|---|
 | `!d20 <target_number> <crit_range> [num_dice=2]` | anyone | Rolls `num_dice` d20s. A roll counts as a success if it's ≤ `target_number`, and as an *extra* success if it's ≤ `crit_range` (so low rolls in the crit range count double). A natural 20 is a "complication." Rolls in the crit range are bolded in the summary. Dice are capped at 20 per roll (spam/abuse guard). |
-| `!cd <num_dice>` | anyone | Rolls Challenge Dice (d6s reskinned with symbols): `1` = success, `2` = double success, `3`–`4` = blank, `5`–`6` = effect. Total successes = successes + effects. |
+| `!cd <num_dice>` | anyone | Rolls Challenge Dice (d6s reskinned with symbols): `1` = success, `2` = double success, `3`–`4` = blank, `5`–`6` = effect. Total successes = successes + effects. Capped at 50 dice per roll (spam/abuse guard). |
 | `!m` / `!m set <n>` / `!m <±n>` | anyone | Check, set, or adjust the Momentum pool. Capped at 0–6 (a hard game rule). Accepts `!m +3`, `!m + 3` (space allowed), or `!m -2`. |
 | `!t` / `!t set <n>` / `!t <±n>` | anyone | Same as Momentum, but for Threat. Threat has no true in-game cap (that's an intentional difference between the two currencies), but is safety-capped at 50 to guard against typos/spam. |
 | `!h` | anyone | Prints the command list. |
@@ -49,7 +49,7 @@ Dice results are always sent as **emoji-only messages** with no accompanying tex
 
 All dice math and pool validation lives here, with zero Discord or web-framework dependency, so both front ends (`ascension_bot_dev.py` for Discord, `web_api.py` for the extension) call the exact same functions instead of each re-implementing the rules. Key pieces:
 
-- `perform_d20_roll` / `perform_challenge_roll` — validate input (dice count 1–20) and roll, raising `AscensionError` with a human-readable message on bad input.
+- `perform_d20_roll` / `perform_challenge_roll` — validate input (dice count 1–20 for d20, 1–50 for Challenge Dice) and roll, raising `AscensionError` with a human-readable message on bad input.
 - `format_d20_discord` / `format_challenge_discord` — turn a raw roll result into the emoji string + markdown text Discord messages are built from.
 - `get_/set_/adjust_momentum` and `get_/set_/adjust_threat` — pool state (plain in-memory dicts keyed by Discord guild ID) with bounds checking.
 

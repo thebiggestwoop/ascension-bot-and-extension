@@ -153,6 +153,7 @@ def create_app(bot, pairing_codes):
             "type": "challenge_roll",
             "source": "owlbear",
             "actor": actor,
+            "faces": faces,
             "total_successes": total_successes,
             "effects": effects,
             "blanks": blanks,

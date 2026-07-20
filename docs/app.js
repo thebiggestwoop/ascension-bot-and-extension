@@ -12,6 +12,8 @@ const MAX_HISTORY_ENTRIES = 20;
 const POLL_INTERVAL_MS = 2500;
 
 const els = {
+  settingsGmNotice: document.getElementById("settings-gm-notice"),
+  settingsControls: document.getElementById("settings-controls"),
   pairingCode: document.getElementById("pairing-code"),
   saveSettings: document.getElementById("save-settings"),
   settingsStatus: document.getElementById("settings-status"),
@@ -70,6 +72,11 @@ function updateThreatVisibility() {
   els.threatGmNotice.hidden = isGM;
 }
 
+function updateSettingsVisibility() {
+  els.settingsControls.hidden = !isGM;
+  els.settingsGmNotice.hidden = isGM;
+}
+
 function formatSigned(value) {
   return value >= 0 ? `+${value}` : `${value}`;
 }
@@ -104,6 +111,31 @@ function pluralize(count, word) {
   return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
+// Same face art the Discord bot posts as custom emoji, reused here as icons.
+const CD_FACE_ICONS = {
+  success: "icons/CD_1.png",
+  double_success: "icons/CD_2.png",
+  blank: "icons/CD_blank.png",
+  effect: "icons/CD_effect.png",
+};
+
+function buildFacesIconRow(faces) {
+  const row = document.createElement("div");
+  row.className = "cd-faces";
+  faces.forEach((face) => {
+    const src = CD_FACE_ICONS[face];
+    if (!src) {
+      return;
+    }
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = face;
+    img.className = "cd-face-icon";
+    row.appendChild(img);
+  });
+  return row;
+}
+
 // Returns { actor, sourceTag, node } describing a roll event as safe DOM
 // nodes, or null if the event isn't a roll (e.g. a pool change).
 function describeRoll(event) {
@@ -121,11 +153,16 @@ function describeRoll(event) {
   }
 
   if (event.type === "challenge_roll") {
+    const container = document.createElement("div");
+    if (Array.isArray(event.faces)) {
+      container.appendChild(buildFacesIconRow(event.faces));
+    }
     const line = document.createElement("span");
     line.textContent =
       `CD -> ${pluralize(event.total_successes, "success")}, ` +
       `${pluralize(event.effects, "effect")}, ${pluralize(event.blanks, "blank")}`;
-    return { actor: event.actor, sourceTag, node: line };
+    container.appendChild(line);
+    return { actor: event.actor, sourceTag, node: container };
   }
 
   return null;
@@ -347,6 +384,7 @@ els.threatSetBtn.addEventListener(
 async function refreshRole() {
   isGM = (await OBR.player.getRole()) === "GM";
   updateThreatVisibility();
+  updateSettingsVisibility();
 }
 
 async function init() {
