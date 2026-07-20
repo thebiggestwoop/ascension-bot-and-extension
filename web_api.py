@@ -112,6 +112,7 @@ def create_app(bot, pairing_codes):
             "source": "owlbear",
             "actor": actor,
             "rolls": rolls,
+            "target_number": target_number,
             "crit_range": crit_range,
             "total_successes": total_successes,
             "complications": complications,

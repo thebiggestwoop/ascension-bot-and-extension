@@ -65,6 +65,7 @@ async def d20(ctx, target_number: int, crit_range: int, num_dice: int = 2):
         "source": "discord",
         "actor": ctx.author.display_name,
         "rolls": rolls,
+        "target_number": target_number,
         "crit_range": crit_range,
         "total_successes": total_successes,
         "complications": complications,

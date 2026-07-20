@@ -87,8 +87,9 @@ function renderPending() {
 }
 
 // Builds "[3, 14, 20]" as DOM nodes (not an HTML string) so nothing in
-// `rolls` can ever be interpreted as markup, with crit-range rolls bolded.
-function buildRollsFragment(rolls, critRange) {
+// `rolls` can ever be interpreted as markup. Matches the bot's own text
+// formatting: crit successes bold+underlined, plain successes bold.
+function buildRollsFragment(rolls, targetNumber, critRange) {
   const frag = document.createDocumentFragment();
   frag.appendChild(document.createTextNode("["));
   rolls.forEach((roll, i) => {
@@ -96,6 +97,11 @@ function buildRollsFragment(rolls, critRange) {
       frag.appendChild(document.createTextNode(", "));
     }
     if (roll <= critRange) {
+      const strong = document.createElement("strong");
+      strong.style.textDecoration = "underline";
+      strong.textContent = String(roll);
+      frag.appendChild(strong);
+    } else if (roll <= targetNumber) {
       const strong = document.createElement("strong");
       strong.textContent = String(roll);
       frag.appendChild(strong);
@@ -152,7 +158,7 @@ function describeRoll(event) {
       container.appendChild(buildIconRow(event.rolls, D20_ICONS));
     }
     const line = document.createElement("span");
-    line.appendChild(buildRollsFragment(event.rolls, event.crit_range));
+    line.appendChild(buildRollsFragment(event.rolls, event.target_number, event.crit_range));
     let suffix = ` -> ${pluralize(event.total_successes, "success")}`;
     if (event.complications > 0) {
       suffix += `, ${pluralize(event.complications, "complication")}`;
