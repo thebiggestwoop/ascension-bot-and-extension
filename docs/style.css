@@ -111,19 +111,40 @@ input {
   width: 64px;
 }
 
+/* Secondary (default): quiet outline style for supporting actions like
+   Apply/Set/-1/+1, so they don't compete visually with the roll buttons.
+   Uses the same neutral fg/border colors as the rest of the UI chrome
+   (rather than --accent) since those are already tuned for legibility in
+   both light and dark themes -- --accent is a fixed dark purple that would
+   have poor contrast sitting directly on a dark card background. */
 button {
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 6px 10px;
-  background: var(--accent);
-  color: var(--accent-text);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  padding: 5px 9px;
+  background: transparent;
+  color: var(--fg);
   cursor: pointer;
   font-weight: 600;
 }
 
 button:hover {
-  filter: brightness(1.1);
+  border-color: var(--accent);
+}
+
+/* Primary: the loud, filled button for the main action in a card (rolling).
+   Safe in both themes since the fill is a fixed dark color regardless of
+   page theme, so the gold text always has strong contrast against it. */
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
 }
 
 button:disabled {
