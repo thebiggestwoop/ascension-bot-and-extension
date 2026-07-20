@@ -1,0 +1,163 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1e1f22;
+  --card-bg: #f2f3f5;
+  --border: #d4d6da;
+  --accent: #5865f2;
+  --error: #d83c3e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #313338;
+    --fg: #f2f3f5;
+    --card-bg: #2b2d31;
+    --border: #1e1f22;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 10px;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+h1 {
+  font-size: 15px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+}
+
+.status {
+  margin: 2px 0 0 0;
+  min-height: 14px;
+  font-size: 12px;
+  color: var(--fg);
+  opacity: 0.75;
+}
+
+.status.error {
+  color: var(--error);
+  opacity: 1;
+}
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--card-bg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0;
+}
+
+.field label {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.row label {
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  gap: 2px;
+}
+
+input {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: var(--bg);
+  color: var(--fg);
+  width: 64px;
+}
+
+button {
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.roll-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.roll-history:empty::before {
+  content: "No rolls yet.";
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.roll-history li {
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+.roll-history li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.pending {
+  font-size: 11px;
+  opacity: 0.8;
+}

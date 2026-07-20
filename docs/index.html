@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ascension Dice</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Ascension Dice</h1>
+    <p id="global-status" class="status"></p>
+  </header>
+
+  <section class="card">
+    <h2>Roll History</h2>
+    <ul id="roll-history" class="roll-history"></ul>
+  </section>
+
+  <details id="settings-details">
+    <summary>Settings</summary>
+    <div class="field">
+      <label for="pairing-code">Pairing code</label>
+      <input id="pairing-code" type="text" placeholder="from !link in Discord" />
+    </div>
+    <button id="save-settings">Save</button>
+    <p id="settings-status" class="status"></p>
+  </details>
+
+  <section class="card">
+    <h2>d20</h2>
+    <div class="row">
+      <label>Target <input id="d20-target" type="number" value="10" /></label>
+      <label>Crit <input id="d20-crit" type="number" value="1" /></label>
+      <label>Dice <input id="d20-num-dice" type="number" value="2" /></label>
+    </div>
+    <button id="d20-roll-btn">Roll d20</button>
+  </section>
+
+  <section class="card">
+    <h2>Challenge Dice</h2>
+    <div class="row">
+      <label>Dice <input id="cd-num-dice" type="number" value="2" /></label>
+    </div>
+    <button id="cd-roll-btn">Roll Challenge Dice</button>
+  </section>
+
+  <section class="card">
+    <h2>Momentum: <span id="momentum-value">0</span></h2>
+    <div class="row">
+      <button id="momentum-stage-minus">-1</button>
+      <span class="pending">Pending: <span id="momentum-pending">+0</span></span>
+      <button id="momentum-stage-plus">+1</button>
+      <button id="momentum-apply-btn">Apply</button>
+    </div>
+    <div class="row">
+      <label>Set to <input id="momentum-set-input" type="number" /></label>
+      <button id="momentum-set-btn">Set</button>
+    </div>
+  </section>
+
+  <section class="card" id="threat-card">
+    <h2>Threat: <span id="threat-value">0</span></h2>
+    <p id="threat-gm-notice" class="status">GM only.</p>
+    <div id="threat-controls" hidden>
+      <div class="row">
+        <button id="threat-stage-minus">-1</button>
+        <span class="pending">Pending: <span id="threat-pending">+0</span></span>
+        <button id="threat-stage-plus">+1</button>
+        <button id="threat-apply-btn">Apply</button>
+      </div>
+      <div class="row">
+        <label>Set to <input id="threat-set-input" type="number" /></label>
+        <button id="threat-set-btn">Set</button>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
