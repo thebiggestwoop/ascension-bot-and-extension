@@ -272,7 +272,7 @@ function withBusy(button, fn) {
     button.disabled = true;
     try {
       await fn();
-      setStatus(els.globalStatus, "Done.", false);
+      setStatus(els.globalStatus, "", false);
     } catch (err) {
       setStatus(els.globalStatus, err.message, true);
     } finally {
