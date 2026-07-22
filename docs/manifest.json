@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "manifest_version": 1,
   "icon": "/icons/d20_1.png",
-  "author": "You",
+  "author": "thebiggestwoop",
   "description": "Roll d20s and Challenge Dice, track Momentum/Threat, and post results to Discord.",
   "action": {
     "title": "Ascension",
