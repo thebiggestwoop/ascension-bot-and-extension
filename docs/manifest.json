@@ -2,7 +2,7 @@
   "name": "Ascension Dice",
   "version": "0.2.0",
   "manifest_version": 1,
-  "icon": "/icons/sun.png",
+  "icon": "/icons/d20_1.png",
   "author": "thebiggestwoop",
   "description": "Roll d20s and Challenge Dice, track Momentum/Threat, and post results to Discord.",
   "action": {
