@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 # Set up bot with a prefix for commands
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 # Maps a pairing code -> {"guild_id": int, "channel_id": int}, created by
 # !link and consumed by web_api.py. In-memory only -- codes (and the link
@@ -235,38 +235,21 @@ async def threat(ctx, *args):
         await ctx.send(emoji_string)
 
 
-@bot.command(name="h")
+@bot.command(name="h", aliases=["help"])
 async def help_command(ctx):
-    # Sent as two messages -- comfortably under Discord's 2000-char limit
-    # each, and it keeps "Discord commands" and "the Owlbear extension"
-    # visually separate rather than one wall of text.
-    commands_text = (
-        "**Ascension Dice Bot -- Commands**\n\n"
-        "**!d20 <target> <crit_range> [dice] [dN | con] [+N/-N]**\n"
-        "Rolls a task check (`dice` defaults to 2). A roll succeeds if it's <= target; a roll <= crit_range is a **crit success** (bold + underlined) and still only counts once toward successes.\n\n"
-        "Optional trailing arguments, in any order:\n"
-        "  - `dN` -- sets a task Difficulty of N successes (e.g. `d4`); reports whether the task succeeded and any extra successes beyond Difficulty.\n\n"
-        "  - `con` -- a **contested check**: Difficulty is set to the total successes from the last `!d20` roll in this server (defender rolls plain, attacker adds `con`). Reports \"no defender roll found\" if there's nothing to use yet. Can't be combined with `dN`.\n\n"
-        "  - `+N` / `-N` -- adjusts the final success count up or down, applied before Difficulty is checked (floors at 0).\n\n"
-        "Example: `!d20 10 2 3 d4 +1` -> target 10, crit range 2, 3 dice, Difficulty 4, +1 modifier.\n\n"
-        "**!cd <dice>** - Rolls Challenge Dice (d6s reskinned as success / double success / blank / effect). Total successes = successes + effects.\n\n"
-        "**!m** / **!m set <n>** / **!m <+/-n>** - Check, set, or adjust the Momentum pool (capped 0-6).\n"
-        "**!t** / **!t set <n>** / **!t <+/-n>** - Same for Threat (no hard game cap, safety-capped at 50).\n\n"
-        "**!link** - Generates a code linking this channel to the Owlbear extension (needs Manage Server permission).\n\n"
-        "**!h** - Shows this help."
-    )
-    extension_text = (
+    help_text = (
+        "**Bot Commands:**\n\n"
+        "**!d20 [target_number] [crit_range] [num_dice] [dN | con] [+N | -N]** - Rolls d20 dice. Specify the target number, critical range, and number of dice (default is 2). \n"
+        "* Optionally add `dN` for a task Difficulty of N successes (e.g. `!d20 10 2 3 d4`) -- reports whether the task succeeded and any extra successes beyond Difficulty. \n"
+        "* Or add `con` for a **contested check**: Difficulty is set to the number of successes from the immediately previous `!d20` roll in this server (e.g. defender rolls `!d20 10 2`, then attacker rolls `!d20 10 2 con`). Reports \"no defender roll found\" and rolls without a Difficulty if there's no previous roll to use. Add `+N`/`-N` (e.g. `!d20 10 2 +3`) to adjust the final success count up or down (applied before Difficulty is checked; can't go below 0).\n"
+        "**!cd [num_dice]** - Rolls Challenge Dice. Specify the number of dice.\n"
+        "**!m [amount]** - Adjusts the Momentum pool. Use `!m` to check current Momentum, `!m set [amount]` to set a value, or `!m [amount]` to add/subtract.\n"
+        "**!t [amount]** - Adjusts the Threat pool. Use `!t` to check current Threat, `!t set [amount]` to set a value, or `!t [amount]` to add/subtract.\n"
+        "**!link** - Generates a code to link this channel to the Owlbear extension.\n\n"
         "**Owlbear Extension:** https://owlbear.heruv.uk/manifest.json\n"
-        "Add it in Owlbear (Extensions -> Add custom extension). It works standalone with no bot needed -- or run `!link` here and paste the code into the extension's Settings to sync rolls and Momentum/Threat with this channel.\n\n"
-        "What's in it:\n"
-        "- **Character Sheet** -- your 7 Attributes and 6 Skills, each with a select button.\n"
-        "- **Task** -- pick an Attribute + Skill to auto-build a roll (Target/Crit fill in for you), plus Dice count, Focus (crit range becomes the Skill's value), Complication/Advantage (+/-5), and Difficulty/Contested. A \"Result\" box shows your last roll here, and picking both an Attribute and Skill names the roll after them (e.g. \"Agility + Skirmish\").\n"
-        "- **Challenge Dice** -- a dice stepper, Reroll Blanks (instantly rerolls last roll's blanks), and its own Result box.\n"
-        "- **Momentum and Threat** -- shared pool controls in one dropdown (Threat is GM-only).\n"
-        "- **Settings** -- editable accent colors, and Export/Import for your Settings + Character Sheet as a JSON file."
+        "Add it in Owlbear (Extensions -> Add custom extension), then run `!link` here and paste the code into the extension's Settings to roll dice and adjust Momentum/Threat right from Owlbear.\n"
     )
-    await ctx.send(commands_text)
-    await ctx.send(extension_text)
+    await ctx.send(help_text)
 
 
 @bot.command(name="link")
