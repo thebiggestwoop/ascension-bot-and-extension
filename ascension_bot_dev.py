@@ -15,6 +15,7 @@ connection conflicts. Use a separate bot application/token for this dev copy
 import asyncio
 import logging
 import os
+import re
 import secrets
 
 import discord
@@ -42,23 +43,77 @@ def generate_pairing_code():
     return secrets.token_urlsafe(6)
 
 
+# Matches the trailing "dX" Difficulty notation on !d20, e.g. "d3" -- kept
+# distinct from a plain number (num_dice) by requiring the leading d/D.
+_DIFFICULTY_RE = re.compile(r"^[dD](\d+)$")
+
+# Matches the trailing "+X"/"-X" modifier notation, e.g. "+3" or "-2" --
+# requiring the explicit leading sign is what keeps it distinct from a plain
+# number (num_dice), which is never signed.
+_MODIFIER_RE = re.compile(r"^[+-]\d+$")
+
+
 # Command for d20 roll
 @bot.command()
 @commands.guild_only()
-async def d20(ctx, target_number: int, crit_range: int, num_dice: int = 2):
+async def d20(ctx, target_number: int, crit_range: int, *args):
+    num_dice = 2
+    difficulty = None
+    modifier = 0
+    con_requested = False
+    for arg in args:
+        if arg.lower() == "con":
+            con_requested = True
+            continue
+        match = _DIFFICULTY_RE.match(arg)
+        if match:
+            difficulty = int(match.group(1))
+            continue
+        mod_match = _MODIFIER_RE.match(arg)
+        if mod_match:
+            modifier = int(arg)
+            continue
+        try:
+            num_dice = int(arg)
+        except ValueError:
+            await ctx.send(
+                f"{ctx.author.mention}\n**Error:** Unrecognized argument: `{arg}`. "
+                "Use a number for dice count, `dN` for Difficulty (e.g. `d3`), `con` for a contested check, "
+                "or `+N`/`-N` to adjust the final success count."
+            )
+            return
+
+    if con_requested and difficulty is not None:
+        await ctx.send(f"{ctx.author.mention}\n**Error:** Can't combine `dN` and `con` -- use one or the other.")
+        return
+
+    no_defender_found = False
+    if con_requested:
+        difficulty = gl.get_last_d20_successes(ctx.guild.id)
+        if difficulty is None:
+            no_defender_found = True
+
     try:
-        rolls, total_successes, complications = gl.perform_d20_roll(target_number, crit_range, num_dice)
+        rolls, total_successes, complications, task_success, extra_successes = gl.perform_d20_roll(
+            target_number, crit_range, num_dice, difficulty, modifier
+        )
     except gl.AscensionError as e:
         await ctx.send(f"{ctx.author.mention}\n**Error:** {e}")
         return
 
-    emoji_chunks, result_text = gl.format_d20_discord(rolls, target_number, crit_range, total_successes, complications)
+    emoji_chunks, result_text = gl.format_d20_discord(
+        rolls, target_number, crit_range, total_successes, complications, task_success, extra_successes, modifier
+    )
+    if no_defender_found:
+        result_text += "\n**Note:** No defender roll found -- rolled without a Difficulty."
 
     # Sent emoji-only (no text) so Discord renders the dice faces at large size
     for chunk in emoji_chunks:
         await ctx.send(chunk)
 
     await ctx.send(f"{ctx.author.mention}\n{result_text}")
+
+    gl.record_last_d20_successes(ctx.guild.id, total_successes)
 
     event_bus.publish(ctx.guild.id, {
         "type": "d20_roll",
@@ -69,6 +124,10 @@ async def d20(ctx, target_number: int, crit_range: int, num_dice: int = 2):
         "crit_range": crit_range,
         "total_successes": total_successes,
         "complications": complications,
+        "difficulty": difficulty,
+        "task_success": task_success,
+        "extra_successes": extra_successes,
+        "modifier": modifier,
     })
 
 
@@ -180,7 +239,7 @@ async def threat(ctx, *args):
 async def help_command(ctx):
     help_text = (
         "**Bot Commands:**\n\n"
-        "**!d20 [target_number] [crit_range] [num_dice]** - Rolls d20 dice. Specify the target number, critical range, and number of dice (default is 2).\n"
+        "**!d20 [target_number] [crit_range] [num_dice] [dN | con] [+N | -N]** - Rolls d20 dice. Specify the target number, critical range, and number of dice (default is 2). Optionally add `dN` for a task Difficulty of N successes (e.g. `!d20 10 2 3 d4`) -- reports whether the task succeeded and any extra successes beyond Difficulty. Or add `con` for a **contested check**: Difficulty is set to the number of successes from the immediately previous `!d20` roll in this server (e.g. defender rolls `!d20 10 2`, then attacker rolls `!d20 10 2 con`). Reports \"no defender roll found\" and rolls without a Difficulty if there's no previous roll to use. Add `+N`/`-N` (e.g. `!d20 10 2 +3`) to adjust the final success count up or down (applied before Difficulty is checked; can't go below 0).\n"
         "**!cd [num_dice]** - Rolls Challenge Dice. Specify the number of dice.\n"
         "**!m [amount]** - Adjusts the Momentum pool. Use `!m` to check current Momentum, `!m set [amount]` to set a value, or `!m [amount]` to add/subtract.\n"
         "**!t [amount]** - Adjusts the Threat pool. Use `!t` to check current Threat, `!t set [amount]` to set a value, or `!t [amount]` to add/subtract.\n"

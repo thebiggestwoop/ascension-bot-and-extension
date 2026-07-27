@@ -1,6 +1,16 @@
-"""aiohttp web layer that lets the Owlbear extension trigger the same
-dice-roll/pool logic used by the Discord commands (via game_logic.py), and
-post the results into whichever Discord channel a pairing code is linked to.
+"""aiohttp web layer for the Owlbear extension.
+
+Rolling now happens client-side (see docs/diceLogic.js, a JS port of
+game_logic.py's rolling rules) and syncs between Owlbear clients directly via
+OBR.broadcast, with no server involved. This module's role for rolls is just
+to optionally relay an already-computed result to Discord when a room is
+paired (handle_announce) -- it never re-rolls.
+
+Momentum/Threat pools stay server-authoritative here ONLY for paired rooms
+(handle_momentum/handle_threat, unchanged) -- Discord's `!m`/`!t` commands
+need to reach this same in-memory state, which an Owlbear client has no way
+to touch directly. Unpaired rooms track pools locally via OBR room metadata
+instead (see docs/app.js); this module is never involved in that case.
 
 Runs in the same asyncio event loop as the bot (see ascension_bot_dev.main()),
 so handlers can call channel.send(...) directly using the bot's existing
@@ -9,7 +19,7 @@ Discord connection -- no separate webhook or bot token needed.
 Also exposes a polling endpoint (handle_updates) so the extension can pick
 up rolls and pool changes triggered from Discord chat commands, not just
 its own actions -- see event_bus.py for why this is polling rather than a
-push/streaming connection.
+push/streaming connection. Polling only ever runs while paired.
 """
 
 import logging
@@ -78,7 +88,13 @@ def create_app(bot, pairing_codes):
             "seq": event_bus.latest_seq(guild_id),
         })
 
-    async def handle_d20_roll(request):
+    async def handle_announce(request):
+        """Called by the extension after it already rolled locally (see
+        docs/diceLogic.js). Formats and posts that already-computed result to
+        the linked Discord channel using game_logic.py's own unmodified
+        formatters -- does NOT re-roll, and does NOT publish to event_bus
+        (Owlbear-to-Owlbear distribution is OBR.broadcast's job now, not
+        this server's)."""
         pairing = resolve_pairing(request)
         if pairing is None:
             return web.json_response({"error": "Unknown or expired pairing code."}, status=404)
@@ -87,84 +103,85 @@ def create_app(bot, pairing_codes):
         if data is None:
             return web.json_response({"error": "Invalid JSON body."}, status=400)
 
-        try:
-            target_number = int(data["target_number"])
-            crit_range = int(data["crit_range"])
-            num_dice = int(data.get("num_dice", 2))
-        except (KeyError, TypeError, ValueError):
-            return web.json_response({"error": "target_number and crit_range are required integers."}, status=400)
-
-        try:
-            rolls, total_successes, complications = gl.perform_d20_roll(target_number, crit_range, num_dice)
-        except gl.AscensionError as e:
-            return web.json_response({"error": str(e)}, status=400)
-
-        emoji_chunks, result_text = gl.format_d20_discord(rolls, target_number, crit_range, total_successes, complications)
-
+        kind = data.get("type")
         actor = data.get("player_name") or "Someone"
         channel = await _get_channel(bot, pairing["channel_id"])
-        for chunk in emoji_chunks:
-            await channel.send(chunk)
-        await channel.send(f"{_attribution(actor)}\n{result_text}")
 
-        event_bus.publish(pairing["guild_id"], {
-            "type": "d20_roll",
-            "source": "owlbear",
-            "actor": actor,
-            "rolls": rolls,
-            "target_number": target_number,
-            "crit_range": crit_range,
-            "total_successes": total_successes,
-            "complications": complications,
-        })
+        if kind == "d20_roll":
+            rolls = data.get("rolls")
+            if not isinstance(rolls, list) or not (1 <= len(rolls) <= gl.MAX_D20_DICE):
+                return web.json_response(
+                    {"error": f"rolls is required and must have 1-{gl.MAX_D20_DICE} entries."}, status=400
+                )
+            try:
+                rolls = [int(r) for r in rolls]
+                target_number = int(data["target_number"])
+                crit_range = int(data["crit_range"])
+                total_successes = int(data["total_successes"])
+                complications = int(data["complications"])
+            except (KeyError, TypeError, ValueError):
+                return web.json_response({"error": "Invalid or missing roll fields."}, status=400)
 
-        return web.json_response({
-            "rolls": rolls,
-            "total_successes": total_successes,
-            "complications": complications,
-        })
+            # Difficulty is optional -- present only when the roller set one.
+            task_success = None
+            extra_successes = None
+            if data.get("difficulty") is not None:
+                try:
+                    task_success = bool(data["task_success"])
+                    extra_successes = int(data["extra_successes"])
+                except (KeyError, TypeError, ValueError):
+                    return web.json_response({"error": "Invalid difficulty fields."}, status=400)
 
-    async def handle_challenge_roll(request):
-        pairing = resolve_pairing(request)
-        if pairing is None:
-            return web.json_response({"error": "Unknown or expired pairing code."}, status=404)
+            # modifier is purely for display (see format_d20_discord) --
+            # total_successes has already had it applied client-side.
+            try:
+                modifier = int(data.get("modifier") or 0)
+            except (TypeError, ValueError):
+                return web.json_response({"error": "Invalid modifier field."}, status=400)
 
-        data = await read_json(request)
-        if data is None:
-            return web.json_response({"error": "Invalid JSON body."}, status=400)
+            emoji_chunks, result_text = gl.format_d20_discord(
+                rolls, target_number, crit_range, total_successes, complications,
+                task_success, extra_successes, modifier,
+            )
+            for chunk in emoji_chunks:
+                await channel.send(chunk)
 
-        try:
-            num_dice = int(data["num_dice"])
-        except (KeyError, TypeError, ValueError):
-            return web.json_response({"error": "num_dice is a required integer."}, status=400)
+            # The title (if any -- see docs/app.js, only set when both an
+            # Attribute and Skill are selected for the roll) rides on the
+            # same header line as the attribution, same as the sibling
+            # Lancer extension's own roll-naming feature.
+            title = data.get("title")
+            header = f"{_attribution(actor)}**: {title}**" if title else _attribution(actor)
+            await channel.send(f"{header}\n{result_text}")
 
-        try:
-            faces, total_successes, effects, blanks = gl.perform_challenge_roll(num_dice)
-        except gl.AscensionError as e:
-            return web.json_response({"error": str(e)}, status=400)
+            # Keeps the "con" (contested check) lookup correct for a
+            # subsequent Discord !d20 con, the same as a Discord-rolled
+            # check would.
+            gl.record_last_d20_successes(pairing["guild_id"], total_successes)
 
-        symbols, result_text = gl.format_challenge_discord(faces, total_successes, effects, blanks)
+        elif kind == "challenge_roll":
+            faces = data.get("faces")
+            if not isinstance(faces, list) or not (1 <= len(faces) <= gl.MAX_CD_DICE):
+                return web.json_response(
+                    {"error": f"faces is required and must have 1-{gl.MAX_CD_DICE} entries."}, status=400
+                )
+            if any(face not in ("success", "double_success", "blank", "effect") for face in faces):
+                return web.json_response({"error": "Invalid face value."}, status=400)
+            try:
+                total_successes = int(data["total_successes"])
+                effects = int(data["effects"])
+                blanks = int(data["blanks"])
+            except (KeyError, TypeError, ValueError):
+                return web.json_response({"error": "Invalid or missing roll fields."}, status=400)
 
-        actor = data.get("player_name") or "Someone"
-        channel = await _get_channel(bot, pairing["channel_id"])
-        await channel.send(symbols)
-        await channel.send(f"{_attribution(actor)}\n{result_text}")
+            symbols, result_text = gl.format_challenge_discord(faces, total_successes, effects, blanks)
+            await channel.send(symbols)
+            await channel.send(f"{_attribution(actor)}\n{result_text}")
 
-        event_bus.publish(pairing["guild_id"], {
-            "type": "challenge_roll",
-            "source": "owlbear",
-            "actor": actor,
-            "faces": faces,
-            "total_successes": total_successes,
-            "effects": effects,
-            "blanks": blanks,
-        })
+        else:
+            return web.json_response({"error": "type must be 'd20_roll' or 'challenge_roll'."}, status=400)
 
-        return web.json_response({
-            "total_successes": total_successes,
-            "effects": effects,
-            "blanks": blanks,
-        })
+        return web.json_response({"ok": True})
 
     async def handle_pool_update(pairing, data, get_fn, set_fn, adjust_fn, emoji_fn, pool_label):
         guild_id = pairing["guild_id"]
@@ -258,8 +275,7 @@ def create_app(bot, pairing_codes):
     app = web.Application(middlewares=[cors_middleware])
     app.router.add_get('/api/{code}/state', handle_state)
     app.router.add_get('/api/{code}/updates', handle_updates)
-    app.router.add_post('/api/{code}/roll/d20', handle_d20_roll)
-    app.router.add_post('/api/{code}/roll/cd', handle_challenge_roll)
+    app.router.add_post('/api/{code}/announce', handle_announce)
     app.router.add_post('/api/{code}/momentum', handle_momentum)
     app.router.add_post('/api/{code}/threat', handle_threat)
     app.router.add_route('OPTIONS', '/{tail:.*}', lambda request: web.Response())

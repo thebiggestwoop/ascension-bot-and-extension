@@ -25,6 +25,22 @@ MAX_CD_DICE = 50
 momentum_pool = {}
 threat_pool = {}
 
+# Tracks each guild's most recent d20 check's total_successes, for the "con"
+# (contested check) notation: !d20 ... con rolls with Difficulty set to
+# whatever the immediately previous check in that guild rolled, so a
+# defender's plain check can be followed by an attacker's contested one.
+# Updated after every d20 roll (Discord or an announced Owlbear one),
+# regardless of whether that roll itself used a Difficulty/con.
+last_d20_successes = {}
+
+
+def record_last_d20_successes(server_id, total_successes):
+    last_d20_successes[server_id] = total_successes
+
+
+def get_last_d20_successes(server_id):
+    return last_d20_successes.get(server_id)
+
 
 class AscensionError(Exception):
     """A user-facing validation failure (bad roll/pool input). Any front end
@@ -40,20 +56,42 @@ def roll_dice(sides, num_dice):
     return [random.randint(1, sides) for _ in range(num_dice)]
 
 
-def roll_d20(target_number, crit_range, num_dice):
+def roll_d20(target_number, crit_range, num_dice, difficulty=None, modifier=0):
     rolls = roll_dice(20, num_dice)
     successes = sum(1 for roll in rolls if roll <= target_number)
     crit_successes = sum(1 for roll in rolls if roll <= crit_range)
     complications = sum(1 for roll in rolls if roll == 20)
     total_successes = successes + crit_successes
-    return rolls, total_successes, complications
+
+    # A flat +X/-X adjustment to the dice-derived total (see !d20's "+X"/"-X"
+    # notation) -- applied before Difficulty, since Difficulty compares
+    # against the roll's *final* success count. Clamped at 0 since a
+    # negative success count isn't meaningful.
+    if modifier:
+        total_successes = max(0, total_successes + modifier)
+
+    # Difficulty is the number of successes a task needs to succeed at all;
+    # extra successes are whatever's earned beyond that, 0 if the roll
+    # succeeded exactly at difficulty or failed outright.
+    task_success = None
+    extra_successes = None
+    if difficulty is not None:
+        task_success = total_successes >= difficulty
+        extra_successes = total_successes - difficulty if total_successes > difficulty else 0
+
+    return rolls, total_successes, complications, task_success, extra_successes
 
 
-def perform_d20_roll(target_number, crit_range, num_dice):
-    """Validates and rolls d20s. Raises AscensionError on bad input."""
+def perform_d20_roll(target_number, crit_range, num_dice, difficulty=None, modifier=0):
+    """Validates and rolls d20s. Raises AscensionError on bad input. difficulty
+    is optional -- omitting it (None) leaves task_success/extra_successes as
+    None too, unchanged from the pre-Difficulty behavior. modifier is a flat
+    +X/-X applied to the final success count, 0 (no change) by default."""
     if not 1 <= num_dice <= MAX_D20_DICE:
         raise AscensionError(f"Number of dice must be between 1 and {MAX_D20_DICE}.")
-    return roll_d20(target_number, crit_range, num_dice)
+    if difficulty is not None and difficulty < 0:
+        raise AscensionError("Difficulty must be zero or greater.")
+    return roll_d20(target_number, crit_range, num_dice, difficulty, modifier)
 
 
 # Emojis for d20 rolls
@@ -81,9 +119,15 @@ d20_emojis = {
 }
 
 
-def format_d20_discord(rolls, target_number, crit_range, total_successes, complications):
+def format_d20_discord(rolls, target_number, crit_range, total_successes, complications,
+                        task_success=None, extra_successes=None, modifier=0):
     """Turns a raw d20 roll result into the (emoji_chunks, result_text) pair
-    a Discord message pair is built from."""
+    a Discord message pair is built from. task_success/extra_successes are
+    only reported when a Difficulty was given for the roll (see
+    roll_d20/perform_d20_roll) -- omitted (None), the output is identical to
+    before Difficulty existed. modifier is purely for display here -- the
+    caller has already applied it to total_successes; passing it through
+    just lets the message show that a +X/-X was involved."""
     emoji_string = ''.join(d20_emojis[roll] for roll in rolls)
 
     # Split the emoji string into chunks of a reasonable length
@@ -98,9 +142,18 @@ def format_d20_discord(rolls, target_number, crit_range, total_successes, compli
         return str(roll)
 
     formatted_rolls = ", ".join(format_roll(roll) for roll in rolls)
-    result_text = f"**Rolls:** [{formatted_rolls}]\n**Total Successes:** {total_successes}"
+    result_text = (
+        f"**Target:** {target_number}, **Crit Range:** {crit_range}\n"
+        f"**Rolls:** [{formatted_rolls}]\n**Total Successes:** {total_successes}"
+    )
+    if modifier:
+        result_text += f"\n**Modifier:** {modifier:+d}"
     if complications > 0:
         result_text += f"\n**Complications:** {complications}"
+    if task_success is not None:
+        result_text += f"\n**Task Success:** {'Yes' if task_success else 'No'}"
+        if extra_successes:
+            result_text += f"\n**Extra Successes:** {extra_successes}"
 
     return emoji_chunks, result_text
 

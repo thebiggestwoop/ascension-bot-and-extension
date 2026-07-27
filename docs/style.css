@@ -5,8 +5,10 @@
   --card-bg: #f2f3f5;
   --border: #d4d6da;
   --accent: #361887;
-  --accent-text: #e2ca5b;
+  --accent-2: #867220;
+  --accent-text: #ffffff;
   --error: #d83c3e;
+  --mono-font: Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,7 +37,10 @@ body {
 }
 
 h1 {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin: 0;
 }
 
@@ -75,6 +80,20 @@ summary {
   background: var(--card-bg);
 }
 
+#momentum-card,
+#threat-card {
+  padding: 6px 0 6px 8px;
+}
+
+#momentum-card {
+  border-left: 3px solid var(--accent);
+}
+
+#threat-card {
+  border-left: 3px solid var(--accent-2);
+  margin-top: 10px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -85,6 +104,19 @@ summary {
 .field label {
   font-size: 11px;
   opacity: 0.8;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+
+.checkbox-field input {
+  width: auto;
 }
 
 .row {
@@ -111,6 +143,15 @@ input {
   width: 64px;
 }
 
+input[type="number"],
+.signed-number {
+  height: 32px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--mono-font);
+}
+
 /* Native spinner arrows look like unstyled browser chrome next to the rest
    of the themed UI -- hidden in favor of the custom .number-stepper below
    (typing a value directly still works too). */
@@ -130,8 +171,8 @@ input[type="number"]::-webkit-inner-spin-button {
   display: inline-block;
 }
 
-.number-input input[type="number"] {
-  padding-right: 16px;
+.number-input input {
+  padding-right: 18px;
 }
 
 .number-stepper {
@@ -139,7 +180,7 @@ input[type="number"]::-webkit-inner-spin-button {
   top: 1px;
   right: 1px;
   bottom: 1px;
-  width: 15px;
+  width: 18px;
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--border);
@@ -154,7 +195,7 @@ input[type="number"]::-webkit-inner-spin-button {
   background: transparent;
   color: var(--fg);
   font-weight: 400;
-  font-size: 7px;
+  font-size: 9px;
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -169,9 +210,10 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Secondary (default): quiet outline style for supporting actions like
    Apply/Set/-1/+1, so they don't compete visually with the roll buttons.
    Uses the same neutral fg/border colors as the rest of the UI chrome
-   (rather than --accent) since those are already tuned for legibility in
-   both light and dark themes -- --accent is a fixed dark purple that would
-   have poor contrast sitting directly on a dark card background. */
+   (rather than an accent) since those are already tuned for legibility in
+   both light and dark themes -- a fixed accent color at rest would have
+   poor contrast sitting directly on a dark card background. Highlights to
+   accent-2 on hover instead. */
 button {
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -183,12 +225,12 @@ button {
 }
 
 button:hover {
-  border-color: var(--accent);
+  border-color: var(--accent-2);
 }
 
 /* Primary: the loud, filled button for the main action in a card (rolling).
    Safe in both themes since the fill is a fixed dark color regardless of
-   page theme, so the gold text always has strong contrast against it. */
+   page theme, so the white text always has strong contrast against it. */
 .btn-primary {
   border-color: var(--accent);
   background: var(--accent);
@@ -198,11 +240,20 @@ button:hover {
   font-size: 14px;
 }
 
+/* Overrides the generic button:hover's accent-2 border -- primary buttons
+   keep their own accent border unchanged on hover, same as before that
+   rule existed. */
 .btn-primary:hover {
+  border-color: var(--accent);
   filter: brightness(1.15);
 }
 
 button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -247,10 +298,31 @@ button:disabled {
   height: 36px;
 }
 
+.roll-outcome-box {
+  display: inline-block;
+  width: fit-content;
+  border: 1px solid var(--accent);
+  padding: 2px 4px;
+  margin-top: 2px;
+  margin-right: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.roll-outcome-box.roll-outcome-stakes {
+  border-color: var(--accent-2);
+}
+
 .roll-time {
   opacity: 0.6;
   font-size: 11px;
   font-weight: 400;
+}
+
+.roll-title-line {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .pending {
@@ -291,4 +363,246 @@ button:disabled {
 .pool-icon {
   width: 48px;
   height: 48px;
+}
+
+.cd-controls-row {
+  align-items: center;
+}
+
+.cd-controls-row .btn-primary {
+  flex: 1;
+}
+
+.cd-secondary-row button {
+  flex: 0 0 auto;
+}
+
+/* A bigger, dedicated stepper for the Challenge Dice count -- unlike the
+   generic tiny overlay stepper every other number field gets, this one has
+   its own visible +/- buttons beside a larger input, mirroring the sibling
+   Lancer extension's own d6/d3 dice-count fields. */
+.dice-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dice-input {
+  width: 60px;
+  height: 44px;
+  padding: 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  font-family: var(--mono-font);
+}
+
+.stepper-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stack-btn {
+  width: 30px;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stack-btn-plus {
+  height: 30px;
+  font-size: 18px;
+}
+
+.stack-btn-minus {
+  height: 12px;
+  font-size: 10px;
+}
+
+.char-sheet-column-titles {
+  display: flex;
+  gap: 12px;
+}
+
+.char-sheet-column-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.char-sheet-columns {
+  display: flex;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.char-sheet-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* One fewer row than the attribute column (6 vs 7) -- a bigger gap between
+   these rows makes the two columns' total height match, so both columns'
+   top AND bottom edges line up despite the different row count. */
+.char-sheet-column-skills {
+  gap: 11.2px;
+}
+
+.char-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.char-stat-btn {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 4px 6px;
+  font-size: 13px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.char-stat-btn.active {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: var(--accent-text);
+}
+
+.char-stat-value {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+}
+
+.char-sheet-actions-row .btn-primary {
+  flex: 0 0 auto;
+}
+
+.char-sheet-small-field {
+  flex: 0 0 auto;
+  width: 60px;
+}
+
+#char-sheet-syntax {
+  width: 100%;
+  font-family: var(--mono-font);
+}
+
+.char-sheet-roll-btn-row .btn-primary {
+  flex: 1;
+}
+
+.char-sheet-roll-btn-row button:not(.btn-primary) {
+  flex: 0 0 auto;
+}
+
+/* Shared by both the Task card's and Challenge Dice card's "Result" viewers
+   (#task-result / #cd-result) -- each shows the most recent roll(s) made
+   locally in this browser via that card's own roll button(s). Normally just
+   one, but the Challenge Dice card's Reroll Blanks stacks onto whatever's
+   already there instead of replacing it (see appendCdResult() in app.js). */
+.result-wrap {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.result-label {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.result-box {
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Spacing between stacked entries when Reroll Blanks has appended more than
+   one -- irrelevant to the Task card's viewer, which only ever has one. */
+.result-box > div + div {
+  margin-top: 8px;
+}
+
+/* The main Roll History card's dice-icon rows stay left-aligned and at the
+   smaller default size (.dice-faces/.dice-face-icon have no rules of their
+   own for either) -- scoping both to .result-box only affects these two
+   mini-viewers. Matches .pool-icon (Momentum/Threat) for equal visual
+   weight with the rest of the extension's larger icon treatments. */
+.result-box .dice-faces {
+  justify-content: center;
+}
+
+.result-box .dice-face-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.result-box:empty::before {
+  content: "No rolls yet.";
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+/* A nicer on/off control than a bare checkbox, sized to match the row's
+   other 32px-tall fields for equal visual weight. */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-track {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  background: var(--border);
+  border-radius: 13px;
+  transition: background-color 150ms ease;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: var(--bg);
+  border-radius: 50%;
+  transition: transform 150ms ease;
+}
+
+.switch input:checked + .switch-track {
+  background: var(--accent-2);
+}
+
+.switch input:checked + .switch-track .switch-thumb {
+  transform: translateX(22px);
+}
+
+/* .field label's opacity/font-size dimming is meant for plain text labels
+   -- the switch itself is also a <label> (wrapping its checkbox) but should
+   stay fully visible. */
+.field .switch {
+  opacity: 1;
 }

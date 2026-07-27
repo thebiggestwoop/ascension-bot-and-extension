@@ -13,7 +13,22 @@
 
   <details id="settings-details">
     <summary>Settings</summary>
-    <p id="settings-gm-notice" class="status">GM only.</p>
+    <div class="row accent-color-row">
+      <div class="field">
+        <label for="accent-color-setting">Accent color 1</label>
+        <input id="accent-color-setting" type="text" maxlength="7" />
+      </div>
+      <div class="field">
+        <label for="accent-color-2-setting">Accent color 2</label>
+        <input id="accent-color-2-setting" type="text" maxlength="7" />
+      </div>
+      <button id="reset-colors-btn" type="button">Reset colors</button>
+    </div>
+    <label class="checkbox-field">
+      <input id="pair-discord-setting" type="checkbox" checked />
+      Pair with Discord
+    </label>
+    <p id="settings-gm-notice" class="status">Only a GM can set the pairing code.</p>
     <div id="settings-controls" hidden>
       <div class="field">
         <label for="pairing-code">Pairing code</label>
@@ -22,6 +37,11 @@
       <button id="save-settings">Save</button>
     </div>
     <p id="settings-status" class="status"></p>
+    <div class="row">
+      <button id="export-settings-btn" type="button">Export Settings and Character Sheet</button>
+      <button id="import-settings-btn" type="button">Import Settings and Character Sheet</button>
+      <input id="import-settings-file" type="file" accept="application/json,.json" hidden />
+    </div>
   </details>
 
   <section class="card">
@@ -29,62 +49,189 @@
     <ul id="roll-history" class="roll-history"></ul>
   </section>
 
-  <section class="card">
-    <h2>d20</h2>
-    <div class="row">
-      <label>Target <input id="d20-target" type="number" value="10" /></label>
-      <label>Crit <input id="d20-crit" type="number" value="1" /></label>
-      <label>Dice <input id="d20-num-dice" type="number" value="2" /></label>
+  <details id="character-sheet-details">
+    <summary>Character Sheet</summary>
+    <div class="char-sheet-column-titles">
+      <div class="char-sheet-column-title">Attributes</div>
+      <div class="char-sheet-column-title">Skills</div>
     </div>
-    <button id="d20-roll-btn" class="btn-primary">Roll d20</button>
+    <div class="char-sheet-columns">
+      <div class="char-sheet-column">
+        <div class="char-stat-row" data-group="attribute" data-key="AGILI">
+          <button type="button" class="char-stat-btn">AGILI</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="BRAWN">
+          <button type="button" class="char-stat-btn">BRAWN</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="COORD">
+          <button type="button" class="char-stat-btn">COORD</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="AWARE">
+          <button type="button" class="char-stat-btn">AWARE</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="REASON">
+          <button type="button" class="char-stat-btn">REASON</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="FAITH">
+          <button type="button" class="char-stat-btn">FAITH</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="attribute" data-key="PRES">
+          <button type="button" class="char-stat-btn">PRES</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+      </div>
+      <div class="char-sheet-column char-sheet-column-skills">
+        <div class="char-stat-row" data-group="skill" data-key="SKIR">
+          <button type="button" class="char-stat-btn">SKIR</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="skill" data-key="AUTH">
+          <button type="button" class="char-stat-btn">AUTH</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="skill" data-key="DIPL">
+          <button type="button" class="char-stat-btn">DIPL</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="skill" data-key="STUDY">
+          <button type="button" class="char-stat-btn">STUDY</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="skill" data-key="MED">
+          <button type="button" class="char-stat-btn">MED</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+        <div class="char-stat-row" data-group="skill" data-key="INT">
+          <button type="button" class="char-stat-btn">INT</button>
+          <input type="number" class="char-stat-value" value="0" />
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <section class="card">
+    <h2>Task</h2>
+    <div class="row char-sheet-actions-row">
+      <div class="field">
+        <label for="char-sheet-num-dice">Dice</label>
+        <input id="char-sheet-num-dice" type="number" value="2" min="1" max="5" />
+      </div>
+      <div class="field">
+        <label for="char-sheet-focus">Focus</label>
+        <label class="switch">
+          <input id="char-sheet-focus" type="checkbox" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+      <div class="field">
+        <label for="char-sheet-modifier">Complication/<br />Advantage</label>
+        <input id="char-sheet-modifier" type="text" inputmode="numeric" class="signed-number" value="+0" min="-5" max="5" />
+      </div>
+      <div class="field">
+        <label for="char-sheet-difficulty">Difficulty</label>
+        <input id="char-sheet-difficulty" type="number" placeholder="none" min="0" max="9" />
+      </div>
+      <div class="field" title="Sets Difficulty to the last check's total successes in this room, instead of a typed-in number -- for contested checks (e.g. defender rolls plain, attacker rolls Contested).">
+        <label for="char-sheet-contested">Contested</label>
+        <label class="switch">
+          <input id="char-sheet-contested" type="checkbox" />
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </label>
+      </div>
+    </div>
+    <div class="row char-sheet-roll-row">
+      <div class="field char-sheet-small-field">
+        <label for="char-sheet-target">Target</label>
+        <input id="char-sheet-target" type="number" min="1" max="20" />
+      </div>
+      <div class="field char-sheet-small-field">
+        <label for="char-sheet-crit">Crit</label>
+        <input id="char-sheet-crit" type="number" value="1" min="1" max="9" />
+      </div>
+      <div class="field">
+        <label for="char-sheet-syntax">Roll</label>
+        <input id="char-sheet-syntax" type="text" placeholder="Target Crit Dice" />
+      </div>
+    </div>
+    <div class="row char-sheet-roll-btn-row">
+      <button id="char-sheet-roll-btn" class="btn-primary">Roll Task</button>
+      <button id="char-sheet-reset-btn" type="button">Reset</button>
+    </div>
+    <div class="result-wrap">
+      <div class="result-label">Result</div>
+      <div id="task-result" class="result-box"></div>
+    </div>
   </section>
 
   <section class="card">
     <h2>Challenge Dice</h2>
-    <div class="row">
-      <label>Dice <input id="cd-num-dice" type="number" value="2" /></label>
-    </div>
-    <button id="cd-roll-btn" class="btn-primary">Roll Challenge Dice</button>
-  </section>
-
-  <section class="card">
-    <h2>Momentum: <span id="momentum-value">0</span></h2>
-    <div id="momentum-icons" class="pool-icons"></div>
-    <p class="pending">Pending: <span id="momentum-pending" class="pending-value">+0</span></p>
-    <div class="row">
-      <button id="momentum-stage-minus">-1</button>
-      <button id="momentum-stage-plus">+1</button>
-      <button id="momentum-apply-btn">Apply</button>
-    </div>
-    <details class="set-value">
-      <summary>Set exact value</summary>
-      <div class="row">
-        <label>Set to <input id="momentum-set-input" type="number" /></label>
-        <button id="momentum-set-btn">Set</button>
+    <div class="row cd-controls-row">
+      <div class="dice-stepper">
+        <input id="cd-num-dice" type="text" inputmode="numeric" value="0" class="dice-input" />
+        <div class="stepper-stack">
+          <button id="cd-num-dice-add" class="stack-btn stack-btn-plus" type="button" aria-label="Increase dice">+</button>
+          <button id="cd-num-dice-minus" class="stack-btn stack-btn-minus" type="button" aria-label="Decrease dice">&minus;</button>
+        </div>
       </div>
-    </details>
+      <button id="cd-roll-btn" class="btn-primary">Roll CD</button>
+    </div>
+    <div class="row cd-secondary-row">
+      <button id="cd-reroll-blanks-btn" type="button">Reroll Blanks</button>
+      <button id="cd-reset-btn" type="button">Reset</button>
+    </div>
+    <div class="result-wrap">
+      <div class="result-label">Result</div>
+      <div id="cd-result" class="result-box"></div>
+    </div>
   </section>
 
-  <section class="card" id="threat-card">
-    <h2>Threat: <span id="threat-value">0</span></h2>
-    <div id="threat-icons" class="pool-icons"></div>
-    <p id="threat-gm-notice" class="status">GM only.</p>
-    <div id="threat-controls" hidden>
-      <p class="pending">Pending: <span id="threat-pending" class="pending-value">+0</span></p>
+  <details id="pools-details" open>
+    <summary>Momentum and Threat</summary>
+    <section id="momentum-card">
+      <h2>Momentum: <span id="momentum-value">0</span></h2>
+      <div id="momentum-icons" class="pool-icons"></div>
+      <p class="pending">Pending: <span id="momentum-pending" class="pending-value">+0</span></p>
       <div class="row">
-        <button id="threat-stage-minus">-1</button>
-        <button id="threat-stage-plus">+1</button>
-        <button id="threat-apply-btn">Apply</button>
+        <button id="momentum-stage-minus">-1</button>
+        <button id="momentum-stage-plus">+1</button>
+        <button id="momentum-apply-btn">Apply</button>
       </div>
       <details class="set-value">
         <summary>Set exact value</summary>
         <div class="row">
-          <label>Set to <input id="threat-set-input" type="number" /></label>
-          <button id="threat-set-btn">Set</button>
+          <label>Set to <input id="momentum-set-input" type="number" /></label>
+          <button id="momentum-set-btn">Set</button>
         </div>
       </details>
-    </div>
-  </section>
+    </section>
+
+    <section id="threat-card">
+      <h2>Threat: <span id="threat-value">0</span></h2>
+      <div id="threat-icons" class="pool-icons"></div>
+      <p id="threat-gm-notice" class="status">GM only.</p>
+      <div id="threat-controls" hidden>
+        <p class="pending">Pending: <span id="threat-pending" class="pending-value">+0</span></p>
+        <div class="row">
+          <button id="threat-stage-minus">-1</button>
+          <button id="threat-stage-plus">+1</button>
+          <button id="threat-apply-btn">Apply</button>
+        </div>
+        <details class="set-value">
+          <summary>Set exact value</summary>
+          <div class="row">
+            <label>Set to <input id="threat-set-input" type="number" /></label>
+            <button id="threat-set-btn">Set</button>
+          </div>
+        </details>
+      </div>
+    </section>
+  </details>
 
   <script type="module" src="app.js"></script>
 </body>
