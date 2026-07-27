@@ -257,7 +257,7 @@ async def help_command(ctx):
 async def link(ctx):
     code = generate_pairing_code()
     pairing_codes[code] = {"guild_id": ctx.guild.id, "channel_id": ctx.channel.id}
-    await ctx.send(f"{ctx.author.mention}\n**Owlbear pairing code:** {code}")
+    await ctx.send(f"{ctx.author.mention}\n**Owlbear pairing code:** `{code}`")
 
 
 # Bot event to log readiness
